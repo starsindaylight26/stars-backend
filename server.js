@@ -350,7 +350,7 @@ app.get('/api/rewards/history/:studentId', authMiddleware, async (req, res) => {
 });
 
 // GET /api/ranking
-app.get('/api/ranking', authMiddleware, async (req, res) => {
+app.get('/api/ranking', async (req, res) => {
   try {
     const year = req.query.year; // ← kunin ang year parameter
 
