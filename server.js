@@ -228,7 +228,7 @@ app.get('/api/points/:studentId', authMiddleware, async (req, res) => {
     const scholar  = s.scholar_points  || 0;
     res.json({
       success: true,
-      total: achiever + engage + punctual + scholar,
+      total: s.points || 0,
       categories: [
         { name: 'Achievers Mark', points: achiever },
         { name: 'Engage Badge',   points: engage   },
