@@ -390,3 +390,6 @@ app.get('/api/ranking', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 });
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('STARS Backend running at port ' + PORT);
+});
