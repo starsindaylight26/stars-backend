@@ -352,17 +352,30 @@ app.get('/api/rewards/history/:studentId', authMiddleware, async (req, res) => {
 // GET /api/ranking
 app.get('/api/ranking', authMiddleware, async (req, res) => {
   try {
-    const [rows] = await db.query(
-      'SELECT student_id, full_name, program, block, year_level, COALESCE(achiever_points,0) + COALESCE(engage_points,0) + COALESCE(punctual_points,0) + COALESCE(scholar_points,0) AS total_points FROM students WHERE is_active = 1 ORDER BY total_points DESC LIMIT 100'
-    );
+    const year = req.query.year; // ← kunin ang year parameter
+
+    let sql = `
+      SELECT student_id, full_name, program, block, year_level,
+        COALESCE(achiever_points,0) + COALESCE(engage_points,0) + 
+        COALESCE(punctual_points,0) + COALESCE(scholar_points,0) AS total_points
+      FROM students
+      WHERE is_active = 1
+    `;
+
+    const params = [];
+
+    if (year) {
+      sql += ` AND year_level = ?`; // ← i-add ang filter
+      params.push(parseInt(year));
+    }
+
+    sql += ` ORDER BY total_points DESC LIMIT 100`;
+
+    const [rows] = await db.query(sql, params);
     res.json({ success: true, ranking: rows });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
-});
-
-app.listen(PORT, () => {
-  console.log('STARS Backend running at http://localhost:' + PORT);
-  console.log('API Base: http://localhost:' + PORT + '/api');
 });
