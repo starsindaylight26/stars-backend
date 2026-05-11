@@ -13,7 +13,7 @@ const nodemailer = require('nodemailer');
 const crypto     = require('crypto');
 
 const app  = express();
-const PORT = 8081;
+const PORT = process.env.PORT || 8081;
 const JWT_SECRET = 'stars_secret_key_2025';
 
 // ---- EMAIL CONFIG ----
