@@ -325,7 +325,18 @@ app.post('/api/rewards/redeem', authMiddleware, async (req, res) => {
     if (!students.length) return res.json({ success: false, message: 'Student not found.' });
     const currentPoints = students[0].points || 0;
     if (currentPoints < reward.points_required) return res.json({ success: false, message: 'Not enough points.' });
-    await db.query('UPDATE students SET points = points - ? WHERE student_id = ?', [reward.points_required, studentId]);
+    
+    await db.query(`
+  UPDATE students SET 
+    points = points - ?,
+    scholar_points = GREATEST(0, scholar_points - LEAST(scholar_points, ?)),
+    achiever_points = GREATEST(0, achiever_points - LEAST(achiever_points, ?)),
+    engage_points = GREATEST(0, engage_points - LEAST(engage_points, ?)),
+    punctual_points = GREATEST(0, punctual_points - LEAST(punctual_points, ?))
+  WHERE student_id = ?`,
+  [reward.points_required, reward.points_required, reward.points_required, 
+   reward.points_required, reward.points_required, studentId]);
+    
     await db.query('UPDATE rewards SET stock = stock - 1 WHERE reward_id = ?', [rewardId]);
     await db.query("INSERT INTO redemptions (student_id, reward_id, points_spent, reward_name, status) VALUES (?, ?, ?, ?, 'pending')", [studentId, rewardId, reward.points_required, reward.name]);
     res.json({ success: true, message: 'Redeemed successfully!' });
