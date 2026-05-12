@@ -34,18 +34,18 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
 
 // ---- MULTER (file upload) ----
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './uploads'),
-  filename:    (req, file, cb) => cb(null, Date.now() + '_' + file.originalname)
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = ['.jpg', '.jpeg', '.png', '.pdf'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, allowed.includes(ext));
-  }
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: 'stars-proofs', allowed_formats: ['jpg','jpeg','png','pdf'], resource_type: 'auto' }
+});
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } 
 });
 
 // ---- DATABASE ----
@@ -277,7 +277,7 @@ app.get('/api/submissions/verify-pin', authMiddleware, async (req, res) => {
 // POST /api/submissions
 app.post('/api/submissions', authMiddleware, upload.single('proof'), async (req, res) => {
   const { studentId, title, category_id, description, pin_code } = req.body;
-  const proofPath = req.file ? req.file.filename : null;
+  const proofPath = req.file ? req.file.path : null;
   if (!studentId || !title || !category_id)
     return res.json({ success: false, message: 'Missing required fields.' });
   try {
