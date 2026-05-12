@@ -75,12 +75,12 @@ async function sendVerificationEmail(email, fullName, token) {
   const verifyUrl = BASE_URL + '/verify.html?token=' + token;
 
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: 'smtp-relay.brevo.com',
     port: 587,
     secure: false,
     auth: {
-      user: 'starsindaylight26@gmail.com',
-      pass: process.env.GMAIL_APP_PASSWORD
+      user: 'ab018a001@smtp-brevo.com',
+      pass: process.env.BREVO_SMTP_KEY
     }
   });
 
