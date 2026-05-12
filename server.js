@@ -74,14 +74,23 @@ function authMiddleware(req, res, next) {
 }
 
 // ---- SEND VERIFICATION EMAIL ----
+// Tanggalin ang nodemailer transporter, palitan ng:
 async function sendVerificationEmail(email, fullName, token) {
   const BASE_URL = process.env.FRONTEND_URL || 'http://localhost';
   const verifyUrl = BASE_URL + '/verify.html?token=' + token;
-  await transporter.sendMail({
-    from:    '"STARS — Gordon College" <starsindaylight26@gmail.com>',
-    to:      email,
-    subject: 'STARS — Verify Your Account',
-    html: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + fullName + '</strong>,</p><p>Please verify your STARS account by clicking the button below.</p><p>This link expires in <strong>24 hours</strong>.</p><a href="' + verifyUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Verify My Account</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p><p style="color:#aaa;font-size:12px;">CCS, Gordon College</p></div>'
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + process.env.RESEND_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: 'STARS Gordon College <onboarding@resend.dev>',
+      to: email,
+      subject: 'STARS — Verify Your Account',
+      html: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + fullName + '</strong>,</p><p>Please verify your STARS account by clicking the button below.</p><p>This link expires in <strong>24 hours</strong>.</p><a href="' + verifyUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Verify My Account</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p><p style="color:#aaa;font-size:12px;">CCS, Gordon College</p></div>'
+    })
   });
 }
 
