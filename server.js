@@ -68,27 +68,23 @@ function authMiddleware(req, res, next) {
 
 // ---- SEND VERIFICATION EMAIL ----
 // Tanggalin ang nodemailer transporter, palitan ng:
-const nodemailer = require('nodemailer');
 
 async function sendVerificationEmail(email, fullName, token) {
   const BASE_URL = process.env.FRONTEND_URL || 'https://stars-student-vnzm.onrender.com';
   const verifyUrl = BASE_URL + '/verify.html?token=' + token;
 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'ab018a001@smtp-brevo.com',
-      pass: process.env.BREVO_SMTP_KEY
-    }
-  });
-
-  await transporter.sendMail({
-    from: '"STARS — Gordon College" <starsindaylight26@gmail.com>',
-    to: email,
-    subject: 'STARS — Verify Your Account',
-    html: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + fullName + '</strong>,</p><p>Please verify your STARS account by clicking the button below.</p><p>This link expires in <strong>24 hours</strong>.</p><a href="' + verifyUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Verify My Account</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p><p style="color:#aaa;font-size:12px;">CCS, Gordon College</p></div>'
+  await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'api-key': process.env.BREVO_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { name: 'STARS Gordon College', email: 'starsindaylight26@gmail.com' },
+      to: [{ email: email, name: fullName }],
+      subject: 'STARS — Verify Your Account',
+      htmlContent: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + fullName + '</strong>,</p><p>Please verify your STARS account by clicking the button below.</p><p>This link expires in <strong>24 hours</strong>.</p><a href="' + verifyUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Verify My Account</a><p style="color:#aaa;font-size:12px;">CCS, Gordon College</p></div>'
+    })
   });
 }
 
