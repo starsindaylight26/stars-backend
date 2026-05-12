@@ -122,10 +122,12 @@ app.post('/api/auth/login', async (req, res) => {
       );
 
       try {
-        await sendVerificationEmail(student.email, student.full_name, verifyToken);
-      } catch (mailErr) {
-        console.error('Email error:', mailErr.message);
-      }
+  console.log('Sending email to:', student.email);
+  await sendVerificationEmail(student.email, student.full_name, verifyToken);
+  console.log('Email sent successfully!');
+} catch (mailErr) {
+  console.error('Email error:', mailErr.message);
+}
 
       return res.json({
         success: false,
