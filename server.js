@@ -9,21 +9,14 @@ const jwt        = require('jsonwebtoken');
 const cors       = require('cors');
 const path       = require('path');
 const fs         = require('fs');
-const nodemailer = require('nodemailer');
+
 const crypto     = require('crypto');
 
 const app  = express();
 const PORT = 8081;
 const JWT_SECRET = 'stars_secret_key_2025';
 
-// ---- EMAIL CONFIG ----
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'starsindaylight26@gmail.com',
-    pass: 'fhqvsywsxoupimmr'
-  }
-});
+
 
 // ---- MIDDLEWARE ----
 app.use(cors());
