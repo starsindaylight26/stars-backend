@@ -75,7 +75,8 @@ function authMiddleware(req, res, next) {
 
 // ---- SEND VERIFICATION EMAIL ----
 async function sendVerificationEmail(email, fullName, token) {
-  const verifyUrl = 'http://localhost/verify.html?token=' + token;
+  const BASE_URL = process.env.FRONTEND_URL || 'http://localhost';
+  const verifyUrl = BASE_URL + '/verify.html?token=' + token;
   await transporter.sendMail({
     from:    '"STARS — Gordon College" <starsindaylight26@gmail.com>',
     to:      email,
