@@ -236,11 +236,11 @@ app.get('/api/points/:studentId', authMiddleware, async (req, res) => {
       success: true,
       total: achiever + engage + punctual + scholar,
       categories: [
-        { name: 'Achievers Mark', points: achiever },
-        { name: 'Engage Badge',   points: engage   },
-        { name: 'Punctual Pass',  points: punctual },
-        { name: 'Scholar Track',  points: scholar  }
-      ]
+  { category_code: 'ACHIEVER', points_earned: achiever },
+  { category_code: 'ENGAGE',   points_earned: engage   },
+  { category_code: 'PUNCTUAL', points_earned: punctual },
+  { category_code: 'SCHOLAR',  points_earned: scholar  }
+]
     });
   } catch (err) {
     console.error(err);
