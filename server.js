@@ -199,12 +199,15 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         htmlContent: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + rows[0].full_name + '</strong>,</p><p>Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p><a href="' + resetUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p></div>'
       })
     });
+    console.log('Reset email sent to:', email);
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('Forgot password error:', err);
     res.status(500).json({ success: false, message: 'Server error.' });
   }
 });
+
+// POST /api/auth/reset-password
 
 // POST /api/auth/reset-password
 app.post('/api/auth/reset-password', async (req, res) => {
