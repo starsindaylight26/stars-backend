@@ -107,6 +107,14 @@ app.post('/api/auth/login', async (req, res) => {
     if (!match)
       return res.json({ success: false, message: 'Invalid email or password.' });
 
+    // CHECK ACCOUNT STATUS
+    if (student.status === 'pending') {
+      return res.json({ success: false, message: 'Your account is pending approval from your Program Chair.' });
+    }
+    if (student.status === 'rejected') {
+      return res.json({ success: false, message: 'Your account has been rejected. Please contact your Program Chair.' });
+    }
+
     // CHECK EMAIL VERIFICATION every 30 days
     const now          = new Date();
     const lastVerified = student.last_verified_at ? new Date(student.last_verified_at) : null;
@@ -117,9 +125,9 @@ app.post('/api/auth/login', async (req, res) => {
       const verifyExpires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
       await db.query(
-        'UPDATE students SET verify_token = ?, verify_expires = ? WHERE student_id = ?',
-        [verifyToken, verifyExpires, student.student_id]
-      );
+      'INSERT INTO students (student_id, full_name, email, program, block, year_level, password, is_active, status) VALUES (?, ?, ?, ?, ?, ?, ?, 1, "pending")',
+      [studentId, fullName, email, program, block, yearLevel, hashed]
+    );
 
       try {
   console.log('Sending email to:', student.email);
