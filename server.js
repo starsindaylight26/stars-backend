@@ -376,7 +376,15 @@ app.get('/api/submissions/verify-pin', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/submissions
+// POST /api/submissionslet proofPath = null;
+  if (req.file) {
+    try {
+      const result = await uploadToCloudinary(req.file.buffer);
+      proofPath = result.secure_url;
+    } catch (uploadErr) {
+      console.error('Cloudinary upload error:', uploadErr);
+    }
+  }
 app.post('/api/submissions', authMiddleware, upload.single('proof'), async (req, res) => {
   const { studentId, title, category_id, description, pin_code } = req.body;
   const proofPath = req.file ? req.file.filename : null;
