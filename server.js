@@ -369,6 +369,7 @@ app.get('/api/submissions/verify-pin', authMiddleware, async (req, res) => {
     );
     if (!rows.length) return res.json({ valid: false, message: 'PIN not found.' });
     if (rows[0].is_used) return res.json({ valid: false, message: 'This PIN has already been used.' });
+    
     res.json({ valid: true });
   } catch (err) {
     console.error(err);
@@ -376,7 +377,10 @@ app.get('/api/submissions/verify-pin', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/submissionslet proofPath = null;
+// POST /api/submissions
+app.post('/api/submissions', authMiddleware, upload.single('proof'), async (req, res) => {
+  const { studentId, title, category_id, description, pin_code } = req.body;
+  let proofPath = null;
   if (req.file) {
     try {
       const result = await uploadToCloudinary(req.file.buffer);
@@ -385,9 +389,6 @@ app.get('/api/submissions/verify-pin', authMiddleware, async (req, res) => {
       console.error('Cloudinary upload error:', uploadErr);
     }
   }
-app.post('/api/submissions', authMiddleware, upload.single('proof'), async (req, res) => {
-  const { studentId, title, category_id, description, pin_code } = req.body;
-  const proofPath = req.file ? req.file.filename : null;
   if (!studentId || !title || !category_id)
     return res.json({ success: false, message: 'Missing required fields.' });
   try {
