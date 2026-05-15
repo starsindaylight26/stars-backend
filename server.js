@@ -116,11 +116,27 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // CHECK EMAIL VERIFICATION every 30 days
-    const now          = new Date();
-    const lastVerified = student.last_verified_at ? new Date(student.last_verified_at) : null;
-    const daysSince    = lastVerified ? (now - lastVerified) / (1000 * 60 * 60 * 24) : 999;
+// Skip email verification for approved students
+if (student.status === 'approved') {
+  const token = jwt.sign({ student_id: student.student_id }, JWT_SECRET, { expiresIn: '7d' });
+  return res.json({
+    success:   true,
+    token,
+    fullName:  student.full_name,
+    studentId: student.student_id,
+    email:     student.email,
+    program:   student.program,
+    block:     student.block,
+    yearLevel: student.year_level
+  });
+}
 
-    if (!lastVerified || daysSince >= 30) {
+// CHECK EMAIL VERIFICATION every 30 days
+const now          = new Date();
+const lastVerified = student.last_verified_at ? new Date(student.last_verified_at) : null;
+const daysSince    = lastVerified ? (now - lastVerified) / (1000 * 60 * 60 * 24) : 999;
+
+if (!lastVerified || daysSince >= 30) {
       const verifyToken   = crypto.randomBytes(32).toString('hex');
       const verifyExpires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
