@@ -124,10 +124,7 @@ app.post('/api/auth/login', async (req, res) => {
       const verifyToken   = crypto.randomBytes(32).toString('hex');
       const verifyExpires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-      await db.query(
-      'INSERT INTO students (student_id, full_name, email, program, block, year_level, password, is_active, status) VALUES (?, ?, ?, ?, ?, ?, ?, 1, "pending")',
-      [studentId, fullName, email, program, block, yearLevel, hashed]
-    );
+     
 
       try {
   console.log('Sending email to:', student.email);
