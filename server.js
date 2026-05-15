@@ -12,6 +12,15 @@ const fs         = require('fs');
 
 const crypto     = require('crypto');
 
+// ---- CLOUDINARY ----
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 const app  = express();
 const PORT = process.env.PORT || 8081;
 const JWT_SECRET = 'stars_secret_key_2025';
@@ -26,13 +35,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ---- UPLOADS FOLDER ----
 if (!fs.existsSync('./uploads')) fs.mkdirSync('./uploads');
 
-// ---- MULTER (file upload) ----
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, './uploads'),
-  filename:    (req, file, cb) => cb(null, Date.now() + '_' + file.originalname)
-});
+// ---- MULTER (memory storage for Cloudinary) ----
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowed = ['.jpg', '.jpeg', '.png', '.pdf'];
@@ -40,6 +45,19 @@ const upload = multer({
     cb(null, allowed.includes(ext));
   }
 });
+
+function uploadToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'stars-proofs', resource_type: 'auto' },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+}
 
 // ---- DATABASE ----
 const db = mysql.createPool({
