@@ -174,6 +174,59 @@ if (!lastVerified || daysSince >= 30) {
   }
 });
 
+// POST /api/auth/forgot-password
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.json({ success: false, message: 'Email required.' });
+  try {
+    const [rows] = await db.query('SELECT * FROM students WHERE email = ?', [email]);
+    if (!rows.length) return res.json({ success: false, message: 'Email not found.' });
+    const resetToken   = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
+    await db.query(
+      'UPDATE students SET verify_token = ?, verify_expires = ? WHERE email = ?',
+      [resetToken, resetExpires, email]
+    );
+    const BASE_URL = process.env.FRONTEND_URL || 'https://stars-student-vnzm.onrender.com';
+    const resetUrl = BASE_URL + '/reset-password.html?token=' + resetToken;
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender: { name: 'STARS Gordon College', email: 'starsindaylight26@gmail.com' },
+        to: [{ email: email, name: rows[0].full_name }],
+        subject: 'STARS — Reset Your Password',
+        htmlContent: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + rows[0].full_name + '</strong>,</p><p>Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p><a href="' + resetUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p></div>'
+      })
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
+// POST /api/auth/reset-password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+  if (!token || !newPassword) return res.json({ success: false, message: 'Missing fields.' });
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM students WHERE verify_token = ? AND verify_expires > NOW()', [token]
+    );
+    if (!rows.length) return res.json({ success: false, message: 'Invalid or expired reset link.' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await db.query(
+      'UPDATE students SET password = ?, verify_token = NULL, verify_expires = NULL WHERE student_id = ?',
+      [hashed, rows[0].student_id]
+    );
+    res.json({ success: true, message: 'Password reset successful!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
+});
+
 // GET /api/auth/verify?token=xxx
 app.get('/api/auth/verify', async (req, res) => {
   const { token } = req.query;
