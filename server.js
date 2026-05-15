@@ -80,7 +80,7 @@ async function sendVerificationEmail(email, fullName, token) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      sender: { name: 'STARS Gordon College', email: 'starsindaylight26@gmail.com' },
+      sender: { name: 'GC', email: 'starsindaylight26@gmail.com' },
       to: [{ email: email, name: fullName }],
       subject: 'STARS — Verify Your Account',
       htmlContent: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + fullName + '</strong>,</p><p>Please verify your STARS account by clicking the button below.</p><p>This link expires in <strong>24 hours</strong>.</p><a href="' + verifyUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Verify My Account</a><p style="color:#aaa;font-size:12px;">CCS, Gordon College</p></div>'
@@ -193,7 +193,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       method: 'POST',
       headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sender: { name: 'STARS Gordon College', email: 'starsindaylight26@gmail.com' },
+        sender: { name: 'GC', email: 'starsindaylight26@gmail.com' },
         to: [{ email: email, name: rows[0].full_name }],
         subject: 'STARS — Reset Your Password',
         htmlContent: '<div style="font-family:sans-serif;max-width:520px;margin:auto;background:#06082c;color:#fff;border-radius:12px;padding:32px;"><h2 style="color:#ee781c;">STARS</h2><p>Hi <strong>' + rows[0].full_name + '</strong>,</p><p>Click the button below to reset your password. This link expires in <strong>1 hour</strong>.</p><a href="' + resetUrl + '" style="display:inline-block;margin:20px 0;padding:12px 28px;background:#ee781c;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold;">Reset Password</a><p style="color:#aaa;font-size:12px;">If you did not request this, ignore this email.</p></div>'
